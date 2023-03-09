@@ -12,12 +12,11 @@ Part 2: Design Your Climate App\
 Designing a Flask API base on the queries from part 1
 
 ## Getting Started
+files used
 Part 1: Analyze and Explore the Climate Data\
-files used:\
 climate_start.ipynb\
 hawaii.sqlite\
 Part 2: Design Your Climate App\
-files used:\
 app.py\
 hawaii.sqlite
 
