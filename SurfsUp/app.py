@@ -31,8 +31,9 @@ def home():
             f"/api/v1.0/precipitation <br/>"
             f"/api/v1.0/stations <br/>"
             f"/api/v1.0/tobs <br/>"
-            f"/api/v1.0/<start> <br/>"
-            f"/api/v1.0/<start>/<end> <br/>"
+            f"/api/v1.0/start_date <br/>"
+            f"/api/v1.0/start_date/end_date <br/>"
+            f"<br/>replace start_date/end_date in the form of yyyy-mm-dd"
     )
 
 #precipitation page
@@ -102,16 +103,71 @@ def tobs():
     return jsonify(last_year_active)
 
 
+#start date search 
+@app.route("/api/v1.0/<start_date_str>")
+def start(start_date_str):
 
-@app.route("/api/v1.0/<start>")
-def start():
-    print("Server received request for 'start' page...")
-    return "Welcome to my 'About' page!"
+    session = Session(engine)
 
-@app.route("/api/v1.0/<start>/<end>")
-def end():
-    print("Server received request for 'end' page...")
-    return "Welcome to my 'About' page!"
+    #start date variable
+    start_date = dt.datetime.strptime(start_date_str,"%Y-%m-%d")
+
+    #query for min,max,avg
+    lowest = session.query(func.min(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).first()
+
+    highest = session.query(func.max(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).first()
+
+    average = session.query(func.avg(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).all()
+    
+    session.close()
+    
+    return (f"Station: USC00519281 <br/>\n\
+            Lowest temperature:{lowest}<br/>\n\
+            Highest temperature:{highest}<br/>\n\
+            Average temperature:{average}")
+
+    
+
+
+#start date and end date search 
+@app.route("/api/v1.0/<start_date_str>/<end_date_str>")
+def end(start_date_str,end_date_str):
+
+    session = Session(engine)
+
+    #start and end date variable
+    start_date = dt.datetime.strptime(start_date_str,"%Y-%m-%d")
+    end_date = dt.datetime.strptime(end_date_str,"%Y-%m-%d")
+
+    #query for min,max,avg
+    lowest = session.query(func.min(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).\
+                filter(measurement.date < end_date).first()
+
+    highest = session.query(func.max(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).\
+                filter(measurement.date < end_date).first()
+
+    average = session.query(func.avg(measurement.tobs)).\
+        filter(measurement.station == "USC00519281").\
+            filter(measurement.date > start_date).\
+                filter(measurement.date < end_date).all()
+    
+    session.close()
+    
+    return (f"Station: USC00519281 <br/>\n\
+            Lowest temperature:{lowest}<br/>\n\
+            Highest temperature:{highest}<br/>\n\
+            Average temperature:{average}")
+    
 
 
 if __name__ == "__main__":
